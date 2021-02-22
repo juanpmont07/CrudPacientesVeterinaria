@@ -1,12 +1,13 @@
 import { size } from "lodash";
 import { useEffect, useState } from "react";
-import { getCollection, updateDocument } from "../actions";
+import { deleteDocument, getCollection, updateDocument } from "../actions";
 import { makeStyles, Modal } from "@material-ui/core";
 import { addDocument } from "../actions";
 
 function PatienList() {
   const [patients, setPatients] = useState([]);
   const [modal, setModal] = useState(false);
+  const [modalDelete, setModalDelete] = useState(false);
   const [patient, setPatient] = useState({
     namePet: "",
     typePet: "",
@@ -19,37 +20,44 @@ function PatienList() {
   });
   const [error, setError] = useState(null);
   const [editMode, setEditMode] = useState(false);
+  const [idDelete, setIdDelete] = useState(null);
 
   const openOrCloseModal = (action) => {
-    if(action !== 'edit'){
-      setEditMode(false)
+    if (action !== "edit") {
+      setEditMode(false);
       setInitValue();
     }
-  
-    setError(false)
+
+    setError(false);
     setModal(!modal);
+  };
+
+  const openOrCloseModalDelete = () => {
+    setModalDelete(!modalDelete);
   };
 
   useEffect(() => {
     (async () => {
       const result = await getCollection("patient");
       if (result.statusResponse) {
-        setPatients(result.data)
-        setInitValue()
+        setPatients(result.data);
+        setInitValue();
       }
     })();
   }, []);
 
-  const setInitValue= ()=>{
-    setPatient({namePet: "",
-        typePet: "",
-        racePet: "",
-        birthdatePet: "",
-        fullNameOwner: "",
-        phoneOwner: "",
-        directionOwner: "",
-        emailOwner: ""})
-  }
+  const setInitValue = () => {
+    setPatient({
+      namePet: "",
+      typePet: "",
+      racePet: "",
+      birthdatePet: "",
+      fullNameOwner: "",
+      phoneOwner: "",
+      directionOwner: "",
+      emailOwner: "",
+    });
+  };
 
   const styleModal = makeStyles((theme) => ({
     modal: {
@@ -66,11 +74,16 @@ function PatienList() {
 
   //EDIT O CREATE COMPONENT
 
-  const editPet = (pet)=>{
-    setEditMode(true)
-    setPatient(pet)
-    openOrCloseModal('edit')
-  }
+  const editPet = (pet) => {
+    setEditMode(true);
+    setPatient(pet);
+    openOrCloseModal("edit");
+  };
+
+  const deletePet = (id) => {
+    setIdDelete(id);
+    openOrCloseModalDelete();
+  };
 
   const addPatient = async (e) => {
     e.preventDefault();
@@ -143,6 +156,14 @@ function PatienList() {
       ...patient,
       [event.target.name]: event.target.value,
     });
+  };
+
+  const deletePatient = async () => {
+    const result = await deleteDocument("patient", idDelete);
+    if (!result.statusResponse) {
+      return;
+    }
+    window.location = "/";
   };
 
   const styles = styleModal();
@@ -273,11 +294,40 @@ function PatienList() {
             <button
               type="button"
               className="btn btn-danger btn-block"
-              onClick={() => openOrCloseModal('back')}
+              onClick={() => openOrCloseModal("back")}
             >
               volver
             </button>
           </form>
+        </div>
+      </div>
+    </div>
+  );
+
+  const modalDeleteView = (
+    <div className={styles.modal}>
+      <div className="col-xs-12 container mb-2 p-9">
+        <div className="center-block">
+          <div align="center">
+              <h5>Seguro que desea eliminar?</h5>
+          </div>
+          <div className="modal-footer">
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={() => deletePatient()}
+            >
+              Si
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              data-dismiss="modal"
+              onClick={() => openOrCloseModalDelete()}
+            >
+              No
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -288,7 +338,7 @@ function PatienList() {
       <div className="bg-dark text-white py-3 text-center">
         <button
           type="button"
-          onClick={() => openOrCloseModal('create')}
+          onClick={() => openOrCloseModal("create")}
           className="btn btn-success"
         >
           Crear Paciente
@@ -331,12 +381,15 @@ function PatienList() {
                   <td>{pet.directionOwner}</td>
                   <td>{pet.emailOwner} </td>
                   <td>
-                    <button className="btn btn-danger btn-sm float-right">
+                    <button
+                      className="btn btn-danger btn-sm float-right"
+                      onClick={() => deletePet(pet.id)}
+                    >
                       Eliminar
                     </button>
-                    <button className="btn btn-warning btn-sm float-right"
-                    onClick={()=>  editPet(pet)
-                    }
+                    <button
+                      className="btn btn-warning btn-sm float-right"
+                      onClick={() => editPet(pet)}
                     >
                       Editar
                     </button>
@@ -350,6 +403,10 @@ function PatienList() {
 
       <Modal open={modal} onClose={openOrCloseModal}>
         {modalCreateOrEdit}
+      </Modal>
+
+      <Modal open={modalDelete} onClose={openOrCloseModalDelete}>
+        {modalDeleteView}
       </Modal>
     </div>
   );
