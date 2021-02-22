@@ -11,7 +11,6 @@ export const getCollection = async(collection) => {
     const arrayData = data.docs.map(doc => ({ id: doc.id, ...doc.data()}))
     result.statusResponse = true
     result.data = arrayData
-    console.log(arrayData)
    } catch (error) {
       result.error = error   
       

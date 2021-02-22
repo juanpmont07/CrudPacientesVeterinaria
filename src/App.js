@@ -7,7 +7,6 @@ import {
    Link
 } from 'react-router-dom'
 import PatienList from './components/PatienList';
-import CreatePatient from './components/CreatePatient';
 
 function App() {
   return (
@@ -21,9 +20,7 @@ function App() {
         <Route exact path="/" >
             <PatienList/>
         </Route>
-        <Route path="/createPatient" >
-            <CreatePatient/>
-        </Route>
+        
       </Switch>
 
        
